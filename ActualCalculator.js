@@ -28,13 +28,14 @@ Ext.define('ActualCalculator', {
 			var iteration = this.iterations[i];
 			var iterationTotal = iterationTotals[iteration.get('Name')] || 0;
 			seriesData.push(iterationTotal);
-			var iterationLabel = iteration.get('Name') +'<br/>'+ iteration.get('EndDate');
+			var endLabel = Rally.util.DateTime.formatWithDefault( iteration.get('EndDate') );
+			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
 			categories.push(iterationLabel);
 		}
 		return {
 			series: [
 				{
-					name: 'Actual (Accepted Stories per iteration)',
+					name: 'Actual (Accepted Points per iteration)',
 					data: seriesData
 				}
 			],

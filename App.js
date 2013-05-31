@@ -74,7 +74,7 @@ Ext.define('CustomApp', {
 					type: 'column'
 				},
 				title: {
-					text: 'Iteration Burn Chart'
+					text: 'Project Iteration Burn Chart'
 				},
 				xAxis: {
 
@@ -82,14 +82,7 @@ Ext.define('CustomApp', {
 				yAxis: {
 					min: 0,
 					title: {
-						text: 'Total stories'
-					}
-				},
-				tooltip: {
-					formatter: function() {
-						return '<b>'+ this.x +'</b><br/>'+
-						this.series.name +': '+ this.y +'<br/>'+
-						'Total: '+ this.point.stackTotal;
+						text: 'Total story points'
 					}
 				},
 				plotOptions: {
