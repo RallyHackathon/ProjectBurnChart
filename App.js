@@ -1,47 +1,89 @@
 Ext.define('CustomApp', {
 	extend: 'Rally.app.App',
 	componentCls: 'app',
+	layout: 'fit',
 
-	items: [
-		{
-			xtype: 'rallychart',
-			chartData: {
-				series: [{
-					name: 'John',
-					data: [5, 3, 4, 7, 2]
-				}, {
-					name: 'Jane',
-					data: [2, 2, 3, 2, 1]
-				}, {
-					name: 'Joe',
-					data: [3, 4, 4, 2, 5]
-				}]
+	launch: function() {
+		this.setLoading(true);
+		var projectRef = this.getContext().getProjectRef();
+		var projectOid = this.getContext().getProject().ObjectID;
+		this.loadIterations(projectRef, projectOid);
+	},
+
+	loadIterations: function(projectRef, projectOid){
+		var app = this;
+
+		var iterationStore = Ext.create('Rally.data.WsapiDataStore', {
+			model: 'Iteration',
+			context: {
+				project: projectRef,
+				projectScopeUp: false,
+				projectScopeDown: false
 			},
+			filters: [
+				{
+					property: 'Project',
+					value: projectRef
+				}
+			],
+			sorters: [
+			{
+				property: 'EndDate',
+				direction: 'ASC'
+			}
+	]
+		});
+		var iterationsPromise = iterationStore.load();
+		iterationsPromise.then({
+			success: function(records) {
+				app.loadChart(records, projectOid);
+				this.setLoading(false);
+			},
+			failure: function(error) {
+				// Do something on failure.
+				console.log("Failed to load iterations for project '"+ projectRef +"'");
+				console.log(error);
+			}
+		});
+	},
+
+	loadChart: function(iterations, projectOid){
+		var chart = {
+			xtype: 'rallychart',
+
+			storeType: 'Rally.data.lookback.SnapshotStore',
+			storeConfig: {
+				find: {
+					'Project': projectOid,
+					'_TypeHierarchy': 'HierarchicalRequirement',
+					'ScheduleState': 'Accepted',
+					'Children': null,
+					'_PreviousValues.ScheduleState': {'$ne': 'Accepted'}
+				},
+				fetch: ['PlanEstimate', 'ObjectID', '_ValidFrom', '_ValidTo'],
+				sort: {'_ValidFrom': -1}
+			},
+
+			calculatorType: 'ActualCalculator',
+			calculatorConfig: {
+				iterations: iterations
+			},
+
 			chartConfig: {
 				chart: {
 					type: 'column'
 				},
 				title: {
-					text: 'Stacked column chart'
+					text: 'Iteration Burn Chart'
 				},
 				xAxis: {
-					categories: ['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+
 				},
 				yAxis: {
 					min: 0,
 					title: {
-						text: 'Total fruit consumption'
+						text: 'Total stories'
 					}
-				},
-				legend: {
-					align: 'right',
-					x: -100,
-					verticalAlign: 'top',
-					y: 20,
-					floating: true,
-					borderColor: '#CCC',
-					borderWidth: 1,
-					shadow: false
 				},
 				tooltip: {
 					formatter: function() {
@@ -56,10 +98,8 @@ Ext.define('CustomApp', {
 					}
 				}
 			}
-		}
-	],
+		};
 
-	launch: function() {
-        //Write app code here
-    }
+		this.add(chart);
+	}
 });
