@@ -35,6 +35,7 @@ Ext.define('ActualCalculator', {
 
 		}
 
+		var cumulativeActuals = 0;
 		var actualSeriesData = [];
 		var backlogRemainingSeriesData = [];
 		var devIncreaseSeriesData = [];
@@ -45,7 +46,8 @@ Ext.define('ActualCalculator', {
 			iteration = this.iterations[i];
 			iterationName = iteration.get('Name');
 			var completedIterationTotal = completedIterationTotals[iterationName] || 0;
-			actualSeriesData.push(completedIterationTotal);
+			cumulativeActuals += completedIterationTotal;
+			actualSeriesData.push(cumulativeActuals);
 
 			var backlogRemaining = incompleteIterationTotals[iterationName] || 0;
 			backlogRemainingSeriesData.push(backlogRemaining);
