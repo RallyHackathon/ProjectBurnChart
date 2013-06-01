@@ -54,7 +54,7 @@ Ext.define('ActualCalculator', {
 				devIncreaseSeriesData.push(0);
 			}
 			else{
-				devIncrease = Math.min(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
+				devIncrease = Math.max(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
 				devIncreaseSeriesData.push(devIncrease);
 				previousBacklogRemaining = backlogRemaining;
 			}
