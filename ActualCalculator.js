@@ -66,6 +66,8 @@ Ext.define('ActualCalculator', {
 
 		var backlogBurnProjectionSeriesData = this.calculateBacklogBurnProjection(backlogRemainingSeriesData, actualSeriesData, categories);
 
+		console.log("backlogBurnProjectionSeriesData", backlogBurnProjectionSeriesData);
+
 		return {
 			series: [
 				{
