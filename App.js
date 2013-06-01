@@ -117,9 +117,11 @@ Ext.define('CustomApp', {
 					// needed to keep it from blowing up
 				},
 				yAxis: {
+					lineWidth: 1,
+					tickInterval: 50,
 					min: 0,
 					title: {
-						text: 'Total story points'
+						text: 'Story Points'
 					}
 				},
 				plotOptions: {

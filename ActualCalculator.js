@@ -179,8 +179,9 @@ Ext.define('ActualCalculator', {
 			};
 			var iterationLabel = Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
 			categories.push(iterationLabel);
-			console.log("last3AverageActuals", last3AverageActuals);
 			backlogRemaining -= last3AverageActuals;
+			// clamp it to zero
+			backlogRemaining = Math.max(0, backlogRemaining);
 			data.push(backlogRemaining);
 		}
 
