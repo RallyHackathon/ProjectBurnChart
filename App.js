@@ -119,6 +119,9 @@ Ext.define('CustomApp', {
 				plotOptions: {
 					column: {
 						stacking: 'normal'
+					},
+					line: {
+						connectNulls: true
 					}
 				}
 			}
