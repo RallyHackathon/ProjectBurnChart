@@ -35,19 +35,29 @@ Ext.define('ActualCalculator', {
 
 		}
 
-		var cumulativeActuals = 0;
 		var actualSeriesData = [];
+		var cumulativeActuals = 0;
+		var cumulativeActualSeriesData = [];
 		var backlogRemainingSeriesData = [];
 		var devIncreaseSeriesData = [];
 		var devIncrease;
 		var previousBacklogRemaining = null;
 		var categories = [];
+		var pastIteration = true;
+		var today = new Date().getTime();
 		for (var i = 0, il = this.iterations.length; i < il; i++) {
 			iteration = this.iterations[i];
+			var iterationStart = iteration.get('StartDate').getTime();
+			pastIteration = iterationStart <= today;
+
 			iterationName = iteration.get('Name');
 			var completedIterationTotal = completedIterationTotals[iterationName] || 0;
+			actualSeriesData.push(completedIterationTotal);
 			cumulativeActuals += completedIterationTotal;
-			actualSeriesData.push(cumulativeActuals);
+
+			if(pastIteration){
+				cumulativeActualSeriesData.push(cumulativeActuals);
+			}
 
 			var backlogRemaining = incompleteIterationTotals[iterationName] || 0;
 			backlogRemainingSeriesData.push(backlogRemaining);
@@ -71,8 +81,8 @@ Ext.define('ActualCalculator', {
 		return {
 			series: [
 				{
-					name: 'Dev Total (Accepted Points per iteration)',
-					data: actualSeriesData
+					name: 'Dev Total (Cumulative Accepted Points)',
+					data: cumulativeActualSeriesData
 				},
 				{
 					name: 'Backlog Remaining (Points per iteration)',

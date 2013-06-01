@@ -103,7 +103,7 @@ Ext.define('CustomApp', {
 				capacities: capacities
 			},
 
-			chartColors: ['#009933', '#254361', '#FF0000', '#A40000'],
+			chartColors: ['#009944', '#254361', '#FF0000', '#A40000'],
 
 			chartConfig: {
 				chart: {
