@@ -7,8 +7,11 @@ Ext.define('CustomApp', {
 		this.setLoading(true);
 		var projectRef = this.getContext().getProjectRef();
 		var projectOid = this.getContext().getProject().ObjectID;
-		// var projectRef = '/project/11229304031';
-		// var projectOid = 11229304031;
+
+		// iron man
+		// var projectRef = '/project/6781680972';
+		// var projectOid = 6781680972;
+
 		this.loadIterations(projectRef, projectOid);
 	},
 
