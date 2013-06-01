@@ -64,7 +64,7 @@ Ext.define('ActualCalculator', {
 			categories.push(iterationLabel);
 		}
 
-		var capacityBurnSeriesData = this.calculateCapacityBurn();
+		var backlogBurnProjectionSeriesData = this.calculateBacklogBurnProjection(backlogRemainingSeriesData, actualSeriesData, categories);
 
 		return {
 			series: [
@@ -81,15 +81,16 @@ Ext.define('ActualCalculator', {
 					data: backlogRemainingSeriesData
 				},
 				{
-					name: 'Capacity burn',
+					name: 'Backlog burn projection',
 					type: 'line',
-					data: capacityBurnSeriesData
+					data: backlogBurnProjectionSeriesData
 				}
 			],
 			categories: categories
 		};
 	},
 
+	// old way, instead of backlog burn projection
 	calculateCapacityBurn: function(){
 		var iterationRef;
 		var iterationCapacities = {};
@@ -109,6 +110,53 @@ Ext.define('ActualCalculator', {
 			var iterationCapacity = iterationCapacities[iterationRef] || 0;
 			remainingCapacity += iterationCapacity;
 			data.unshift(remainingCapacity);
+		}
+
+		return data;
+	},
+
+	calculateBacklogBurnProjection: function(backlogRemainingSeriesData, actualSeriesData, categories){
+		var twoWeeksInMillis = 2 * 7 * 24 * 60 * 60 * 1000;
+		var backlogRemaining = backlogRemainingSeriesData[0];
+		var data = [backlogRemaining];
+		var last3AverageActuals;
+		var lastIterationModel = this.iterations[this.iterations.length -1];
+		var lastIteration = {
+			endDate: lastIterationModel.get('EndDate')
+		};
+
+		// debugger;
+		var notStarted = true;
+		for(var i=1, l=this.iterations.length; (notStarted && i < l) || backlogRemaining > 0; i++){
+			if(i >= l){
+				lastIteration = {
+					endDate: new Date( lastIteration.endDate.getTime() + twoWeeksInMillis )
+				};
+				var iterationLabel =  Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
+				categories.push(iterationLabel);
+			}
+			else{
+				backlogRemaining = backlogRemainingSeriesData[i];
+			}
+
+			if( notStarted && backlogRemaining === 0 ){
+				continue;
+			}
+			notStarted = false;
+
+			last3AverageActuals = 0;
+			var actualCount = 0;
+			for(var j=i-2; j <= i; j++){
+				if(j < 0){
+					continue;
+				}
+				last3AverageActuals += actualSeriesData[j];
+				actualCount++;
+			}
+			last3AverageActuals /= actualCount;
+
+			backlogRemaining -= last3AverageActuals;
+			data.push(backlogRemaining);
 		}
 
 		return data;
