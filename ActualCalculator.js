@@ -148,10 +148,11 @@ Ext.define('ActualCalculator', {
 				backlogRemaining -= last3AverageActuals;
 			}
 
-			data.push(backlogRemaining);
-
 			if(backlogRemaining <= 0){
-				break;
+				data.push(null);
+			}
+			else{
+				data.push(backlogRemaining);
 			}
 		}
 
