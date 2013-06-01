@@ -10,7 +10,7 @@ Ext.define('ActualCalculator', {
 		for(var s=0, l=snapshots.length; s < l; s++){
 			var snapshot = snapshots[s];
 			var objectID = snapshot.ObjectID;
-			var iterations = this.getIterations(snapshot);
+			var iterations = this.getMatchingIterations(snapshot);
 			if(iterations.length === 0){
 				continue;
 			}
@@ -63,10 +63,13 @@ Ext.define('ActualCalculator', {
 			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
 			categories.push(iterationLabel);
 		}
+
+		var capacityBurnSeriesData = this.calculateCapacityBurn();
+
 		return {
 			series: [
 				{
-					name: 'Dev Incrase (Points per iteration)',
+					name: 'Dev Increase (Points per iteration)',
 					data: devIncreaseSeriesData
 				},
 				{
@@ -76,13 +79,40 @@ Ext.define('ActualCalculator', {
 				{
 					name: 'Backlog Remaining (Points per iteration)',
 					data: backlogRemainingSeriesData
+				},
+				{
+					name: 'Capacity burn',
+					type: 'line',
+					data: capacityBurnSeriesData
 				}
 			],
 			categories: categories
 		};
 	},
 
-	getIterations: function(snapshot){
+	calculateCapacityBurn: function(){
+		var iterationRef;
+		var iterationCapacities = {};
+		for(var c=0, l=this.capacities.length; c < l; c++){
+			var capacity = this.capacities[c];
+			iterationRef = capacity.get('Iteration')._ref;
+			var oldTotal = iterationCapacities[iterationRef] || 0;
+			iterationCapacities[iterationRef] = oldTotal + capacity.Capacity;
+		}
+
+		var data = [];
+
+		for(var i=this.iterations.length-1; i >= 0; i--){
+			var iteration = this.iterations[i];
+			iterationRef = iteration.get('_ref');
+			var total = iterationCapacities[iterationRef] || 0;
+			data.unshift(total);
+		}
+
+		return data;
+	},
+
+	getMatchingIterations: function(snapshot){
 		var matches = [];
 		for(var i=0, l=this.iterations.length; i < l; i++){
 			var iteration = this.iterations[i];

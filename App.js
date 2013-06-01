@@ -5,8 +5,10 @@ Ext.define('CustomApp', {
 
 	launch: function() {
 		this.setLoading(true);
-		var projectRef = this.getContext().getProjectRef();
-		var projectOid = this.getContext().getProject().ObjectID;
+		// var projectRef = this.getContext().getProjectRef();
+		// var projectOid = this.getContext().getProject().ObjectID;
+		var projectRef = '/project/11229304031';
+		var projectOid = 11229304031;
 		this.loadIterations(projectRef, projectOid);
 	},
 
@@ -27,27 +29,56 @@ Ext.define('CustomApp', {
 				}
 			],
 			sorters: [
-			{
-				property: 'EndDate',
-				direction: 'ASC'
-			}
-	]
+				{
+					property: 'EndDate',
+					direction: 'ASC'
+				}
+			]
 		});
 		var iterationsPromise = iterationStore.load();
+
 		iterationsPromise.then({
-			success: function(records) {
-				app.loadChart(records, projectOid);
-				this.setLoading(false);
+			success: function(iterations) {
+
+				var iterationFilters = [];
+				for(var i=0, l=iterations.length; i < l; i++){
+					iterationFilters.push({
+						property: 'Iteration',
+						value: iterations[i].get('_ref')
+					});
+				}
+
+				var capacityStore = Ext.create('Rally.data.WsapiDataStore', {
+					model: 'useriterationcapacity',
+					context: {
+						project: projectRef,
+						projectScopeUp: false,
+						projectScopeDown: false
+					},
+					filters: Rally.data.QueryFilter.or(iterationFilters),
+					fetch: ['Capacity', 'Iteration']
+				});
+
+				var capacityPromise = capacityStore.load();
+				capacityPromise.then({
+					success: function(capacities) {
+						app.loadChart(iterations, capacities, projectOid);
+						this.setLoading(false);
+					},
+					failure: function(error) {
+						console.log("Failed to load iteration capacities");
+						console.log(error);
+					}
+				});
 			},
 			failure: function(error) {
-				// Do something on failure.
 				console.log("Failed to load iterations for project '"+ projectRef +"'");
 				console.log(error);
 			}
 		});
 	},
 
-	loadChart: function(iterations, projectOid){
+	loadChart: function(iterations, capacities, projectOid){
 		var chart = {
 			xtype: 'rallychart',
 
@@ -65,7 +96,8 @@ Ext.define('CustomApp', {
 
 			calculatorType: 'ActualCalculator',
 			calculatorConfig: {
-				iterations: iterations
+				iterations: iterations,
+				capacities: capacities
 			},
 
 			chartConfig: {
