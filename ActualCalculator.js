@@ -97,16 +97,18 @@ Ext.define('ActualCalculator', {
 			var capacity = this.capacities[c];
 			iterationRef = capacity.get('Iteration')._ref;
 			var oldTotal = iterationCapacities[iterationRef] || 0;
-			iterationCapacities[iterationRef] = oldTotal + capacity.Capacity;
+			iterationCapacities[iterationRef] = oldTotal + capacity.get('Capacity');
 		}
 
-		var data = [];
+		var data = [0];
+		var remainingCapacity = 0;
 
-		for(var i=this.iterations.length-1; i >= 0; i--){
+		for(var i=this.iterations.length-1; i > 0; i--){
 			var iteration = this.iterations[i];
 			iterationRef = iteration.get('_ref');
-			var total = iterationCapacities[iterationRef] || 0;
-			data.unshift(total);
+			var iterationCapacity = iterationCapacities[iterationRef] || 0;
+			remainingCapacity += iterationCapacity;
+			data.unshift(remainingCapacity);
 		}
 
 		return data;

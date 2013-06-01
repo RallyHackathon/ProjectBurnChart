@@ -5,10 +5,10 @@ Ext.define('CustomApp', {
 
 	launch: function() {
 		this.setLoading(true);
-		// var projectRef = this.getContext().getProjectRef();
-		// var projectOid = this.getContext().getProject().ObjectID;
-		var projectRef = '/project/11229304031';
-		var projectOid = 11229304031;
+		var projectRef = this.getContext().getProjectRef();
+		var projectOid = this.getContext().getProject().ObjectID;
+		// var projectRef = '/project/11229304031';
+		// var projectOid = 11229304031;
 		this.loadIterations(projectRef, projectOid);
 	},
 
@@ -108,7 +108,7 @@ Ext.define('CustomApp', {
 					text: 'Project Iteration Burn Chart'
 				},
 				xAxis: {
-
+					// needed to keep it from blowing up
 				},
 				yAxis: {
 					min: 0,
