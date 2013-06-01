@@ -5,19 +5,19 @@ Ext.define('ActualCalculator', {
 		var completedIterationTotals = {};
 		var completedStoryIterations = {};
 
-		var incompleteStoryIterations = {};
 		var incompleteIterationTotals = {};
 		var oldTotal, iteration, iterationName;
 		for(var s=0, l=snapshots.length; s < l; s++){
 			var snapshot = snapshots[s];
 			var objectID = snapshot.ObjectID;
-			iteration = this.getIteration(snapshot);
-			if(!iteration){
+			var iterations = this.getIterations(snapshot);
+			if(iterations.length === 0){
 				continue;
 			}
-			iterationName = iteration.get('Name');
 
 			if(snapshot.ScheduleState === "Accepted"){
+				iteration = iterations[0];
+				iterationName = iteration.get('Name');
 				if(snapshot._PreviousValues && (typeof snapshot._PreviousValues.ScheduleState) !== 'undefined' && !completedStoryIterations[objectID] ){
 					completedStoryIterations[objectID] = iteration;
 					oldTotal = completedIterationTotals[iterationName] || 0;
@@ -25,9 +25,12 @@ Ext.define('ActualCalculator', {
 				}
 			}
 			else{
-				incompleteStoryIterations[objectID] = iteration;
-				oldTotal = incompleteIterationTotals[iterationName] || 0;
-				incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+				for(var iter=0, iterL = iterations.length; iter < iterL; iter++){
+					iteration = iterations[iter];
+					iterationName = iteration.get('Name');
+					oldTotal = incompleteIterationTotals[iterationName] || 0;
+					incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+				}
 			}
 
 		}
@@ -63,16 +66,17 @@ Ext.define('ActualCalculator', {
 		};
 	},
 
-	getIteration: function(snapshot){
+	getIterations: function(snapshot){
+		var matches = [];
 		for(var i=0, l=this.iterations.length; i < l; i++){
 			var iteration = this.iterations[i];
 			var iterationEnd = Rally.util.DateTime.toIsoString( iteration.get('EndDate'), true );
 			if(snapshot._ValidFrom <= iterationEnd && snapshot._ValidTo > iterationEnd){
-				return iteration;
+				matches.push(iteration);
 			}
 		}
 
-		return null;
+		return matches;
 	}
 
 });
