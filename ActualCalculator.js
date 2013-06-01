@@ -1,190 +1,212 @@
 Ext.define('ActualCalculator', {
-	extend: 'Rally.data.lookback.calculator.BaseCalculator',
+    extend: 'Rally.data.lookback.calculator.BaseCalculator',
 
-	runCalculation: function(snapshots) {
-		var completedIterationTotals = {};
-		var completedStoryIterations = {};
+    runCalculation: function (snapshots) {
+        var completedIterationTotals = {};
+        var completedStoryIterations = {};
 
-		var incompleteIterationTotals = {};
-		var oldTotal, iteration, iterationName;
-		for(var s=0, l=snapshots.length; s < l; s++){
-			var snapshot = snapshots[s];
-			var objectID = snapshot.ObjectID;
-			var iterations = this.getMatchingIterations(snapshot);
-			if(iterations.length === 0){
-				continue;
-			}
+        var incompleteIterationTotals = {};
+        var oldTotal, iteration, iterationName;
+        for (var s = 0, l = snapshots.length; s < l; s++) {
+            var snapshot = snapshots[s];
+            var objectID = snapshot.ObjectID;
+            var iterations = this.getMatchingIterations(snapshot);
+            if (iterations.length === 0) {
+                continue;
+            }
 
-			if(snapshot.ScheduleState === "Accepted"){
-				iteration = iterations[0];
-				iterationName = iteration.get('Name');
-				if(snapshot._PreviousValues && (typeof snapshot._PreviousValues.ScheduleState) !== 'undefined' && !completedStoryIterations[objectID] ){
-					completedStoryIterations[objectID] = iteration;
-					oldTotal = completedIterationTotals[iterationName] || 0;
-					completedIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
-				}
-			}
-			else{
-				for(var iter=0, iterL = iterations.length; iter < iterL; iter++){
-					iteration = iterations[iter];
-					iterationName = iteration.get('Name');
-					oldTotal = incompleteIterationTotals[iterationName] || 0;
-					incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
-				}
-			}
+            if (snapshot.ScheduleState === "Accepted") {
+                iteration = iterations[0];
+                iterationName = iteration.get('Name');
+                if (snapshot._PreviousValues && (typeof snapshot._PreviousValues.ScheduleState) !== 'undefined' && !completedStoryIterations[objectID]) {
+                    completedStoryIterations[objectID] = iteration;
+                    oldTotal = completedIterationTotals[iterationName] || 0;
+                    completedIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+                }
+            }
+            else {
+                for (var iter = 0, iterL = iterations.length; iter < iterL; iter++) {
+                    iteration = iterations[iter];
+                    iterationName = iteration.get('Name');
+                    oldTotal = incompleteIterationTotals[iterationName] || 0;
+                    incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+                }
+            }
 
-		}
+        }
 
-		var actualSeriesData = [];
-		var backlogRemainingSeriesData = [];
-		var devIncreaseSeriesData = [];
-		var devIncrease;
-		var previousBacklogRemaining = null;
-		var categories = [];
-		for(var i=0, il=this.iterations.length; i < il; i++){
-			iteration = this.iterations[i];
-			iterationName = iteration.get('Name');
-			var completedIterationTotal = completedIterationTotals[iterationName] || 0;
-			actualSeriesData.push(completedIterationTotal);
+        var actualSeriesData = [];
+        var backlogRemainingSeriesData = [];
+        var devIncreaseSeriesData = [];
+        var devIncrease;
+        var previousBacklogRemaining = null;
+        var categories = [];
+        for (var i = 0, il = this.iterations.length; i < il; i++) {
+            iteration = this.iterations[i];
+            iterationName = iteration.get('Name');
+            var completedIterationTotal = completedIterationTotals[iterationName] || 0;
+            actualSeriesData.push(completedIterationTotal);
 
-			var backlogRemaining = incompleteIterationTotals[iterationName] || 0;
-			backlogRemainingSeriesData.push(backlogRemaining);
+            var backlogRemaining = incompleteIterationTotals[iterationName] || 0;
+            backlogRemainingSeriesData.push(backlogRemaining);
 
-			if(i === 0){
-				devIncreaseSeriesData.push(0);
-			}
-			else{
-				devIncrease = Math.max(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
-				devIncreaseSeriesData.push(devIncrease);
-			}
-			previousBacklogRemaining = backlogRemaining;
+            if (i === 0) {
+                devIncreaseSeriesData.push(0);
+            }
+            else {
+                devIncrease = Math.max(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
+                devIncreaseSeriesData.push(devIncrease);
+            }
+            previousBacklogRemaining = backlogRemaining;
 
-			var endLabel = Rally.util.DateTime.formatWithDefault( iteration.get('EndDate') );
-			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
-			categories.push(iterationLabel);
-		}
+            var endLabel = Rally.util.DateTime.formatWithDefault(iteration.get('EndDate'));
+            var iterationLabel = iteration.get('Name') + '<br/>' + endLabel;
+            categories.push(iterationLabel);
+        }
 
-		var backlogBurnProjectionSeriesData = this.calculateBacklogBurnProjection(backlogRemainingSeriesData, actualSeriesData, categories);
+        var backlogBurnProjectionSeriesData = this.calculateBacklogBurnProjection(backlogRemainingSeriesData, actualSeriesData, categories);
 
-		console.log("backlogBurnProjectionSeriesData", backlogBurnProjectionSeriesData);
+        console.log("backlogBurnProjectionSeriesData", backlogBurnProjectionSeriesData);
+        //        console.log("ActualSereis", actualSeriesData);
+        //        console.log("backlogRemainingSeriesData", backlogRemainingSeriesData);
+        //        console.log("devIncreaseSeriesData", devIncreaseSeriesData);
 
-		return {
-			series: [
+
+        return {
+            series: [
 				{
-					name: 'Dev Increase (Points per iteration)',
-					data: devIncreaseSeriesData
+				    name: 'Dev Increase (Points per iteration)',
+				    data: devIncreaseSeriesData
 				},
 				{
-					name: 'Actual (Accepted Points per iteration)',
-					data: actualSeriesData
+				    name: 'Actual (Accepted Points per iteration)',
+				    data: actualSeriesData
 				},
 				{
-					name: 'Backlog Remaining (Points per iteration)',
-					data: backlogRemainingSeriesData
+				    name: 'Backlog Remaining (Points per iteration)',
+				    data: backlogRemainingSeriesData
 				},
 				{
-					name: 'Backlog burn projection',
-					type: 'line',
-					data: backlogBurnProjectionSeriesData
+				    name: 'Backlog burn projection',
+				    type: 'line',
+				    data: backlogBurnProjectionSeriesData
 				}
 			],
-			categories: categories
-		};
-	},
+            categories: categories
+        };
+    },
 
-	// old way, instead of backlog burn projection
-	calculateCapacityBurn: function(){
-		var iterationRef;
-		var iterationCapacities = {};
-		for(var c=0, l=this.capacities.length; c < l; c++){
-			var capacity = this.capacities[c];
-			iterationRef = capacity.get('Iteration')._ref;
-			var oldTotal = iterationCapacities[iterationRef] || 0;
-			iterationCapacities[iterationRef] = oldTotal + capacity.get('Capacity');
-		}
+    // old way, instead of backlog burn projection
+    calculateCapacityBurn: function () {
+        var iterationRef;
+        var iterationCapacities = {};
+        for (var c = 0, l = this.capacities.length; c < l; c++) {
+            var capacity = this.capacities[c];
+            iterationRef = capacity.get('Iteration')._ref;
+            var oldTotal = iterationCapacities[iterationRef] || 0;
+            iterationCapacities[iterationRef] = oldTotal + capacity.get('Capacity');
+        }
 
-		var data = [0];
-		var remainingCapacity = 0;
+        var data = [0];
+        var remainingCapacity = 0;
 
-		for(var i=this.iterations.length-1; i > 0; i--){
-			var iteration = this.iterations[i];
-			iterationRef = iteration.get('_ref');
-			var iterationCapacity = iterationCapacities[iterationRef] || 0;
-			remainingCapacity += iterationCapacity;
-			data.unshift(remainingCapacity);
-		}
+        for (var i = this.iterations.length - 1; i > 0; i--) {
+            var iteration = this.iterations[i];
+            iterationRef = iteration.get('_ref');
+            var iterationCapacity = iterationCapacities[iterationRef] || 0;
+            remainingCapacity += iterationCapacity;
+            data.unshift(remainingCapacity);
+        }
 
-		return data;
-	},
+        return data;
+    },
 
-	calculateBacklogBurnProjection: function(backlogRemainingSeriesData, actualSeriesData, categories){
-		var twoWeeksInMillis = 2 * 7 * 24 * 60 * 60 * 1000;
-		var backlogRemaining = null;
-		var data = [];
-		var last3AverageActuals;
-		var lastIterationModel = this.iterations[this.iterations.length -1];
-		var lastIteration = {
-			endDate: lastIterationModel.get('EndDate')
-		};
+    calculateBacklogBurnProjection: function (backlogRemainingSeriesData, actualSeriesData, categories) {
+        var twoWeeksInMillis = 2 * 7 * 24 * 60 * 60 * 1000;
+        var backlogRemaining = null;
+        var data = [];
+        var last3AverageActuals;
+        var lastIterationModel = this.iterations[this.iterations.length - 1];
+        var lastIteration = {
+            endDate: lastIterationModel.get('EndDate')
+        };
 
-		// debugger;
-		var today = new Date().getTime();
-		var lastRealIterationIndex = null;
-		for(var i=0, l=this.iterations.length; i < l; i++){
-			var iteration = this.iterations[i];
-			if(iteration.get('EndDate').getTime() <= today){
-				backlogRemaining = backlogRemainingSeriesData[i];
-				lastRealIterationIndex = i;
-			}
-			else{
-				last3AverageActuals = 0;
-				var actualCount = 0;
-				for(var j=lastRealIterationIndex-2; j <= lastRealIterationIndex; j++){
-					if(j < 0){
-						continue;
-					}
-					last3AverageActuals += actualSeriesData[j];
-					actualCount++;
-				}
-				last3AverageActuals /= actualCount;
-				backlogRemaining -= last3AverageActuals;
-			}
+        // debugger;
+        var today = new Date().getTime();
+        var lastRealIterationIndex = null;
+        for (var i = 0, l = this.iterations.length; i < l; i++) {
+            var iteration = this.iterations[i];
+            var iterationBeforeToday = (iteration.get('EndDate').getTime() <= today);
+            if (iterationBeforeToday) {
+                backlogRemaining = backlogRemainingSeriesData[i];
+                lastRealIterationIndex = i;
+            }
+            if(!iterationBeforeToday || i ===l-1) {
+                last3AverageActuals = 0;
+                var actualCount = 0;
+                for (var j = lastRealIterationIndex - 2; j <= lastRealIterationIndex; j++) {
+                    if (j < 0) {
+                        continue;
+                    }
+                    last3AverageActuals += actualSeriesData[j];
+                    actualCount++;
+                }
+               
+                }
+            else {
+                last3AverageActuals /= actualCount;
+                backlogRemaining -= last3AverageActuals;
+                if (isNaN(backlogRemaining)) {
+                    debugger;
+                }
+                
+            }
 
-			if(backlogRemaining <= 0){
-				data.push(null);
-			}
-			else{
-				data.push(backlogRemaining);
-			}
-		}
+            if (backlogRemaining <= 0) {
+                if (isNaN(backlogRemaining)) {
+                    debugger;
+                }
+                data.push(null);
+            }
+            else {
+                if (isNaN(backlogRemaining)) {
+                    debugger;
+                }
+                data.push(backlogRemaining);
+            }
+        }
 
-		while(backlogRemaining > 0){
-			lastIteration = {
-				endDate: new Date( lastIteration.endDate.getTime() + twoWeeksInMillis )
-			};
-			var iterationLabel =  Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
-			categories.push(iterationLabel);
+        while (backlogRemaining > 0) {
+            lastIteration = {
+                endDate: new Date(lastIteration.endDate.getTime() + twoWeeksInMillis)
+            };
+            var iterationLabel = Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
+            categories.push(iterationLabel);
+            console.log("last3AverageActuals", last3AverageActuals);
+            backlogRemaining -= last3AverageActuals;
+            if (isNaN(backlogRemaining)) {
+                debugger;
+            }
 
-			backlogRemaining -= last3AverageActuals;
-			data.push(backlogRemaining);
-		}
+            data.push(backlogRemaining);
+        }
 
-		return data;
-	},
+        return data;
+    },
 
-	getMatchingIterations: function(snapshot){
-		var matches = [];
-		for(var i=0, l=this.iterations.length; i < l; i++){
-			var iteration = this.iterations[i];
-			var iterationEnd = Rally.util.DateTime.toIsoString( iteration.get('EndDate'), true );
-			var iterationStart = iteration.get('StartDate').getTime();
-			var today = new Date().getTime();
-			if(snapshot._ValidFrom <= iterationEnd && snapshot._ValidTo > iterationEnd && iterationStart <= today){
-				matches.push(iteration);
-			}
-		}
+    getMatchingIterations: function (snapshot) {
+        var matches = [];
+        for (var i = 0, l = this.iterations.length; i < l; i++) {
+            var iteration = this.iterations[i];
+            var iterationEnd = Rally.util.DateTime.toIsoString(iteration.get('EndDate'), true);
+            var iterationStart = iteration.get('StartDate').getTime();
+            var today = new Date().getTime();
+            if (snapshot._ValidFrom <= iterationEnd && snapshot._ValidTo > iterationEnd && iterationStart <= today) {
+                matches.push(iteration);
+            }
+        }
 
-		return matches;
-	}
+        return matches;
+    }
 
 });
