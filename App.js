@@ -56,11 +56,12 @@ Ext.define('CustomApp', {
 				find: {
 					'Project': projectOid,
 					'_TypeHierarchy': 'HierarchicalRequirement',
-					'ScheduleState': 'Accepted',
+					// 'ScheduleState': 'Accepted',
 					'Children': null,
-					'_PreviousValues.ScheduleState': {'$ne': 'Accepted'}
+					'_PreviousValues.ScheduleState': {'$exists': 'true'}
 				},
-				fetch: ['PlanEstimate', 'ObjectID', '_ValidFrom', '_ValidTo'],
+				fetch: ['PlanEstimate', 'ObjectID', 'ScheduleState', '_ValidFrom', '_ValidTo'],
+				hydrate: ['ScheduleState'],
 				sort: {'_ValidFrom': -1}
 			},
 

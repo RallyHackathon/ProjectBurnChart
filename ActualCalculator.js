@@ -2,32 +2,49 @@ Ext.define('ActualCalculator', {
 	extend: 'Rally.data.lookback.calculator.BaseCalculator',
 
 	runCalculation: function(snapshots) {
-		var iterationTotals = {};
-		var storyIterations = {};
+		var completedIterationTotals = {};
+		var completedStoryIterations = {};
+
+		var incompleteStoryIterations = {};
+		var incompleteIterationTotals = {};
+		var oldTotal, iteration, iterationName;
 		for(var s=0, l=snapshots.length; s < l; s++){
 			var snapshot = snapshots[s];
 			var objectID = snapshot.ObjectID;
-			if( storyIterations[objectID] ){
-				continue;
-			}
-
-			var iteration = this.getIteration(snapshot);
+			iteration = this.getIteration(snapshot);
 			if(!iteration){
 				continue;
 			}
+			iterationName = iteration.get('Name');
 
-			storyIterations[objectID] = iteration;
-			var iterationName = iteration.get('Name');
-			var oldTotal = iterationTotals[iterationName] || 0;
-			iterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+			debugger;
+			if(snapshot.ScheduleState === "Accepted"){
+				if(!completedStoryIterations[objectID] ){
+					completedStoryIterations[objectID] = iteration;
+					oldTotal = completedIterationTotals[iterationName] || 0;
+					completedIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+				}
+			}
+			else if( !incompleteIterationTotals[objectID] ){
+				incompleteStoryIterations[objectID] = iteration;
+				oldTotal = incompleteIterationTotals[iterationName] || 0;
+				incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
+			}
+
 		}
 
-		var seriesData = [];
+		var actualSeriesData = [];
+		var backlogRemainingSeriesData = [];
 		var categories = [];
 		for(var i=0, il=this.iterations.length; i < il; i++){
-			var iteration = this.iterations[i];
-			var iterationTotal = iterationTotals[iteration.get('Name')] || 0;
-			seriesData.push(iterationTotal);
+			iteration = this.iterations[i];
+			iterationName = iteration.get('Name');
+			var completedIterationTotal = completedIterationTotals[iterationName] || 0;
+			actualSeriesData.push(completedIterationTotal);
+
+			var incompleteIterationTotal = incompleteIterationTotals[iterationName] || 0;
+			backlogRemainingSeriesData.push(incompleteIterationTotal);
+
 			var endLabel = Rally.util.DateTime.formatWithDefault( iteration.get('EndDate') );
 			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
 			categories.push(iterationLabel);
@@ -36,7 +53,11 @@ Ext.define('ActualCalculator', {
 			series: [
 				{
 					name: 'Actual (Accepted Points per iteration)',
-					data: seriesData
+					data: actualSeriesData
+				},
+				{
+					name: 'Backlog Remaining (Points per iteration)',
+					data: backlogRemainingSeriesData
 				}
 			],
 			categories: categories
