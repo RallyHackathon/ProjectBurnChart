@@ -37,6 +37,9 @@ Ext.define('ActualCalculator', {
 
 		var actualSeriesData = [];
 		var backlogRemainingSeriesData = [];
+		var devIncreaseSeriesData = [];
+		var devIncrease;
+		var previousBacklogRemaining = null;
 		var categories = [];
 		for(var i=0, il=this.iterations.length; i < il; i++){
 			iteration = this.iterations[i];
@@ -44,8 +47,17 @@ Ext.define('ActualCalculator', {
 			var completedIterationTotal = completedIterationTotals[iterationName] || 0;
 			actualSeriesData.push(completedIterationTotal);
 
-			var incompleteIterationTotal = incompleteIterationTotals[iterationName] || 0;
-			backlogRemainingSeriesData.push(incompleteIterationTotal);
+			var backlogRemaining = incompleteIterationTotals[iterationName] || 0;
+			backlogRemainingSeriesData.push(backlogRemaining);
+
+			if(i === 0){
+				devIncreaseSeriesData.push(0);
+			}
+			else{
+				devIncrease = Math.min(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
+				devIncreaseSeriesData.push(devIncrease);
+				previousBacklogRemaining = backlogRemaining;
+			}
 
 			var endLabel = Rally.util.DateTime.formatWithDefault( iteration.get('EndDate') );
 			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
@@ -53,6 +65,10 @@ Ext.define('ActualCalculator', {
 		}
 		return {
 			series: [
+				{
+					name: 'Dev Incrase (Points per iteration)',
+					data: devIncreaseSeriesData
+				},
 				{
 					name: 'Actual (Accepted Points per iteration)',
 					data: actualSeriesData
