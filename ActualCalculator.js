@@ -85,7 +85,7 @@ Ext.define('ActualCalculator', {
 					data: cumulativeActualSeriesData
 				},
 				{
-					name: 'Backlog Remaining (Points per iteration)',
+					name: 'Backlog Remaining (Total Unaccepted Points)',
 					data: backlogRemainingSeriesData
 				},
 				{
