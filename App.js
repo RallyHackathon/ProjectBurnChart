@@ -103,14 +103,15 @@ Ext.define('CustomApp', {
 				capacities: capacities
 			},
 
-			chartColors: ['#009944', '#254361', '#FF0000', '#A40000'],
+			chartColors: ['#009944', '#254361', '#A40000', '#EE0000'],
 
 			chartConfig: {
 				chart: {
-					type: 'column'
+					type: 'column',
+					zoomType: 'xy'
 				},
 				title: {
-					text: 'Project Iteration Burn Chart'
+					text: 'Project Burn Chart by Iteration'
 				},
 				xAxis: {
 					// needed to keep it from blowing up
@@ -124,7 +125,8 @@ Ext.define('CustomApp', {
 				plotOptions: {
 					column: {
 						stacking: 'normal',
-						borderWidth: 0
+						borderWidth: 0,
+						shadow: true
 					},
 					line: {
 						connectNulls: true,

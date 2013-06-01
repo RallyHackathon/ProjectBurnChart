@@ -89,13 +89,13 @@ Ext.define('ActualCalculator', {
 					data: backlogRemainingSeriesData
 				},
 				{
+					name: 'Dev Increase (Points per iteration)',
+					data: devIncreaseSeriesData
+				},
+				{
 					name: 'Burn down projection',
 					type: 'line',
 					data: backlogBurnProjectionSeriesData
-				},
-				{
-					name: 'Dev Increase (Points per iteration)',
-					data: devIncreaseSeriesData
 				}
 			],
 			categories: categories
