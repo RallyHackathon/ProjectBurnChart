@@ -17,15 +17,14 @@ Ext.define('ActualCalculator', {
 			}
 			iterationName = iteration.get('Name');
 
-			debugger;
 			if(snapshot.ScheduleState === "Accepted"){
-				if(!completedStoryIterations[objectID] ){
+				if(snapshot._PreviousValues && (typeof snapshot._PreviousValues.ScheduleState) !== 'undefined' && !completedStoryIterations[objectID] ){
 					completedStoryIterations[objectID] = iteration;
 					oldTotal = completedIterationTotals[iterationName] || 0;
 					completedIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
 				}
 			}
-			else if( !incompleteIterationTotals[objectID] ){
+			else{
 				incompleteStoryIterations[objectID] = iteration;
 				oldTotal = incompleteIterationTotals[iterationName] || 0;
 				incompleteIterationTotals[iterationName] = oldTotal + snapshot.PlanEstimate;
