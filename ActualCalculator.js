@@ -125,7 +125,6 @@ Ext.define('ActualCalculator', {
 			endDate: lastIterationModel.get('EndDate')
 		};
 
-		// debugger;
 		var notStarted = true;
 		for(var i=1, l=this.iterations.length; (notStarted && i < l) || backlogRemaining > 0; i++){
 			if(i >= l){
@@ -167,7 +166,9 @@ Ext.define('ActualCalculator', {
 		for(var i=0, l=this.iterations.length; i < l; i++){
 			var iteration = this.iterations[i];
 			var iterationEnd = Rally.util.DateTime.toIsoString( iteration.get('EndDate'), true );
-			if(snapshot._ValidFrom <= iterationEnd && snapshot._ValidTo > iterationEnd){
+			var iterationStart = iteration.get('StartDate').getTime();
+			var today = new Date().getTime();
+			if(snapshot._ValidFrom <= iterationEnd && snapshot._ValidTo > iterationEnd && iterationStart <= today){
 				matches.push(iteration);
 			}
 		}
