@@ -117,42 +117,50 @@ Ext.define('ActualCalculator', {
 
 	calculateBacklogBurnProjection: function(backlogRemainingSeriesData, actualSeriesData, categories){
 		var twoWeeksInMillis = 2 * 7 * 24 * 60 * 60 * 1000;
-		var backlogRemaining = backlogRemainingSeriesData[0];
-		var data = [backlogRemaining];
+		var backlogRemaining = null;
+		var data = [];
 		var last3AverageActuals;
 		var lastIterationModel = this.iterations[this.iterations.length -1];
 		var lastIteration = {
 			endDate: lastIterationModel.get('EndDate')
 		};
 
-		var notStarted = true;
-		for(var i=1, l=this.iterations.length; (notStarted && i < l) || backlogRemaining > 0; i++){
-			if(i >= l){
-				lastIteration = {
-					endDate: new Date( lastIteration.endDate.getTime() + twoWeeksInMillis )
-				};
-				var iterationLabel =  Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
-				categories.push(iterationLabel);
+		// debugger;
+		var today = new Date().getTime();
+		var lastRealIterationIndex = null;
+		for(var i=0, l=this.iterations.length; i < l; i++){
+			var iteration = this.iterations[i];
+			if(iteration.get('EndDate').getTime() <= today){
+				backlogRemaining = backlogRemainingSeriesData[i];
+				lastRealIterationIndex = i;
 			}
 			else{
-				backlogRemaining = backlogRemainingSeriesData[i];
-			}
-
-			if( notStarted && backlogRemaining === 0 ){
-				continue;
-			}
-			notStarted = false;
-
-			last3AverageActuals = 0;
-			var actualCount = 0;
-			for(var j=i-2; j <= i; j++){
-				if(j < 0){
-					continue;
+				last3AverageActuals = 0;
+				var actualCount = 0;
+				for(var j=lastRealIterationIndex-2; j <= lastRealIterationIndex; j++){
+					if(j < 0){
+						continue;
+					}
+					last3AverageActuals += actualSeriesData[j];
+					actualCount++;
 				}
-				last3AverageActuals += actualSeriesData[j];
-				actualCount++;
+				last3AverageActuals /= actualCount;
+				backlogRemaining -= last3AverageActuals;
 			}
-			last3AverageActuals /= actualCount;
+
+			data.push(backlogRemaining);
+
+			if(backlogRemaining <= 0){
+				break;
+			}
+		}
+
+		while(backlogRemaining > 0){
+			lastIteration = {
+				endDate: new Date( lastIteration.endDate.getTime() + twoWeeksInMillis )
+			};
+			var iterationLabel =  Rally.util.DateTime.formatWithDefault(lastIteration.endDate);
+			categories.push(iterationLabel);
 
 			backlogRemaining -= last3AverageActuals;
 			data.push(backlogRemaining);
