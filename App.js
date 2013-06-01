@@ -103,6 +103,8 @@ Ext.define('CustomApp', {
 				capacities: capacities
 			},
 
+			chartColors: ['#009933', '#254361', '#FF0000', '#A40000'],
+
 			chartConfig: {
 				chart: {
 					type: 'column'
@@ -121,10 +123,15 @@ Ext.define('CustomApp', {
 				},
 				plotOptions: {
 					column: {
-						stacking: 'normal'
+						stacking: 'normal',
+						borderWidth: 0
 					},
 					line: {
-						connectNulls: true
+						connectNulls: true,
+						lineWidth: 1,
+						marker: {
+							radius: 2.5
+						}
 					}
 				},
 				tooltip: {
