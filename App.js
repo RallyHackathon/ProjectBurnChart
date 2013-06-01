@@ -123,6 +123,9 @@ Ext.define('CustomApp', {
 					line: {
 						connectNulls: true
 					}
+				},
+				tooltip: {
+					shared: true
 				}
 			}
 		};
