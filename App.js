@@ -5,10 +5,8 @@ Ext.define('CustomApp', {
 
 	launch: function() {
 		this.setLoading(true);
-		// var projectRef = this.getContext().getProjectRef();
-		// var projectOid = this.getContext().getProject().ObjectID;
-		var projectRef = '/projects/11229304031';
-		var projectOid = 11229304031;
+		var projectRef = this.getContext().getProjectRef();
+		var projectOid = this.getContext().getProject().ObjectID;
 		this.loadIterations(projectRef, projectOid);
 	},
 
