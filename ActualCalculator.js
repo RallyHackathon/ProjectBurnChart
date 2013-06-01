@@ -56,8 +56,8 @@ Ext.define('ActualCalculator', {
 			else{
 				devIncrease = Math.max(backlogRemaining - previousBacklogRemaining + completedIterationTotal, 0);
 				devIncreaseSeriesData.push(devIncrease);
-				previousBacklogRemaining = backlogRemaining;
 			}
+			previousBacklogRemaining = backlogRemaining;
 
 			var endLabel = Rally.util.DateTime.formatWithDefault( iteration.get('EndDate') );
 			var iterationLabel = iteration.get('Name') +'<br/>'+ endLabel;
