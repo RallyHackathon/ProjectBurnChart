@@ -2,7 +2,7 @@ ProjectBurnChart
 =========================
 
 ## Overview
-
+This application calculates burn down, burn up and increases in scope over the project iterations, as well as the projected completion date for a project that has it's scope defined up front.
 
 ## License
 
