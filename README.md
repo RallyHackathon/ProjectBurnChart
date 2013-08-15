@@ -6,6 +6,6 @@ This application calculates burn down, burn up and increases in scope over the p
 
 ## License
 
-AppTemplate is released under the MIT license.  See the file [LICENSE](https://raw.github.com/RallyApps/AppTemplate/master/LICENSE) for the full text.
+ProjectBurnChart is released under the MIT license.  See the file [LICENSE](https://github.com/RallyHackathon/ProjectBurnChart/master/LICENSE) for the full text.
 
 [Demo video](https://github.com/RallyHackathon/ProjectBurnChart/raw/master/ProjectBurnChart.swf)
